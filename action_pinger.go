@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v2"
 	// "html/template"
+	"github.com/kr/pretty"
 	"io/ioutil"
 	"log"
 )
@@ -23,24 +24,16 @@ type Config struct {
 	Checker_type   string
 	Checker_source string
 	Checker_regex  string
+	Checker_freq   int
 	Action_cmd_on  string
 	Action_cmd_off string
 }
 
-var config Config
-
-// Default Template and Data directory
-var CHECKER_TYPE = "scrape"
-var CHECKER_SOURCE = "http://192.168.1.1/"
-var CHECKER_REGEX = "RouterOS|WebFig"
-var ACTION_CMD_ON = "echo `date` >> /tmp/actionpinger.txt"
-var ACTION_CMD_OFF = "echo oupsss >> /tmp/actionpinger.txt"
+var config = Config{}
 
 func main() {
 	// Parse CLI
 	flag.Parse()
-
-	config = Config{}
 
 	// Load configfile and configure template
 	if len(*configfile) > 0 {
@@ -54,17 +47,35 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		// Change global Tempalte & Data vars
-		CHECKER_TYPE = config.Checker_type
-		CHECKER_SOURCE = config.Checker_source
-		CHECKER_REGEX = config.Checker_regex
-		ACTION_CMD_ON = config.Action_cmd_on
-		ACTION_CMD_OFF = config.Action_cmd_off
 
 	} else {
 		panic("Config file defined properly.")
 	}
 
+	if len(config.Checker_type) == 0 || len(config.Checker_source) == 0 || len(config.Checker_regex) == 0 {
+		panic("Settings not properly configured!")
+	}
+
 	log.Printf("Starting action pinger...")
-	fmt.Println("Welcome to my house!")
+
+	fmt.Println("Let's get the party started...")
+	fmt.Printf("%# v", pretty.Formatter(config))
+
 }
+
+// # checker: check to trigger an action (scrape | ping)
+// checker_type: "scrape"
+
+// # checker_source: URL or IP that will be checked
+// checker_source: "http://192.168.1.1/"
+
+// # checker_regex: Regular expresion to verify on source
+// checker_regex: "RouterOS|WebFig"
+
+// # action to perform when checker_regex is true
+// # leave action_cmd_* empty if no action
+// action_cmd_on: "echo `date` >> /tmp/actionpinger.txt"
+
+// # action to perform when checker_regex is false
+// # leave action_cmd_* empty if no action
+// action_cmd_off: "echo oupsss >> /tmp/actionpinger.txt"
