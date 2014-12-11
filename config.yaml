@@ -1,0 +1,17 @@
+
+# checker: check to trigger an action (scrape | ping)
+checker_type: "scrape"
+
+# checker_source: URL or IP that will be checked
+checker_source: "http://192.168.1.1/"
+
+# checker_regex: Regular expresion to verify on source
+checker_regex: "RouterOS|WebFig"
+
+# action to perform when checker_regex is true
+# leave action_cmd_* empty if no action
+action_cmd_on: ""
+
+# action to perform when checker_regex is false
+# leave action_cmd_* empty if no action
+action_cmd_off: ""
