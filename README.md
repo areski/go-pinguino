@@ -17,3 +17,4 @@ TODO
 
 - [x] Add logging
 - [ ] Implement in Goroutine
+- [ ] Daemonize https://github.com/takama/daemon / https://github.com/sevlyar/go-daemon
