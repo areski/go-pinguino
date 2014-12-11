@@ -10,8 +10,8 @@ checker_regex: "RouterOS|WebFig"
 
 # action to perform when checker_regex is true
 # leave action_cmd_* empty if no action
-action_cmd_on: ""
+action_cmd_on: "echo `date` >> /tmp/actionpinger.txt"
 
 # action to perform when checker_regex is false
 # leave action_cmd_* empty if no action
-action_cmd_off: ""
+action_cmd_off: "echo oupsss >> /tmp/actionpinger.txt"
