@@ -23,17 +23,23 @@ package main
 
 import (
 	// "flag"
+	"errors"
 	"fmt"
 	"github.com/kr/pretty"
 	"github.com/takama/daemon"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
+	"regexp"
 	"syscall"
 	"time"
 )
+
+const check_HTTPGet string = "HTTPGet"
+const check_Ping string = "Ping"
 
 // Config file for actionpinger service
 // var default_conf = "/etc/action_pinger.yaml"
@@ -126,12 +132,74 @@ func (service *Service) Manage() (string, error) {
 	return usage, nil
 }
 
-// Accept a client connection and collect it in a channel
+// func prefChecker(config Config) (string, error) {
+
+// }
+
+// function to check if a ping to an ip is successful
+func checkPing(ipaddress string, checker_regex string) (bool, error) {
+	fmt.Printf("checkPing - ipaddress:%s checker_regex:%s\n", ipaddress, checker_regex)
+	return true, nil
+}
+
+// function to check the content of a URL against a regular expression
+func checkHTTPGet(url string, checker_regex string) (bool, error) {
+	fmt.Printf("checkHTTPGet - url:%s checker_regex:%s\n", url, checker_regex)
+	response, err := http.Get(url)
+	fmt.Println(err)
+	if err != nil {
+		return false, err
+	} else {
+		defer response.Body.Close()
+		contents, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			fmt.Printf("%s", err)
+			os.Exit(1)
+		}
+		fmt.Printf("content len:%d\n", len(contents))
+		if len(contents) > 0 {
+			fmt.Printf("checks again regular expersion:%s\n", checker_regex)
+			// fmt.Printf("%s\n", string(contents))
+			match, regerr := regexp.MatchString(checker_regex, string(contents))
+			fmt.Println(match)
+			if regerr != nil {
+				return false, errors.New("invalid regular expression")
+			}
+			return match, nil
+		} else {
+			return false, errors.New("not content return")
+		}
+	}
+}
+
+// We will run checker here and send command to channel cmd_launcher depending of checker results
 func procChecker(config Config, cmd_launcher chan<- string) {
 	for {
-		c := time.Tick(10 * time.Second)
+		c := time.Tick(time.Duration(config.Checker_freq) * time.Second)
 		for now := range c {
 			fmt.Printf("%v\n", now)
+			// Perform check
+			// Checker_type   string
+			// Checker_source string
+			// Checker_regex  string
+			// Checker_freq   int
+			// Action_cmd_on  string
+			// Action_cmd_off string
+			switch config.Checker_type {
+			case check_HTTPGet:
+				rescheck, cerr := checkHTTPGet(config.Checker_source, config.Checker_regex)
+				if cerr != nil {
+					fmt.Println(cerr)
+				} else {
+					log.Printf("\nChecker result rescheck: %s", rescheck)
+				}
+
+			case check_Ping:
+				// rescheck, cerr := checkPing(config.Checker_source, config.Checker_regex)
+			default:
+				log.Printf("Checker type is incorrect: %s", string(config.Checker_type))
+			}
+
 			cmd_launcher <- "a_command_to_launch"
 		}
 	}

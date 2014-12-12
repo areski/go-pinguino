@@ -1,15 +1,16 @@
 
-# checker: check to trigger an action (scrape | ping)
-checker_type: "scrape"
+# checker: check to trigger an action (HTTPGet | Ping)
+checker_type: "HTTPGet"
 
 # checker_source: URL or IP that will be checked
 checker_source: "http://192.168.1.1/"
 
 # checker_regex: Regular expresion to verify on source
 checker_regex: "RouterOS|WebFig"
+# <title>RouterOS router configuration page</title>
 
 # checker_freq: Frequence of check in seconds (300 -> 5min)
-checker_freq: 300
+checker_freq: 5
 
 # action to perform when checker_regex is true
 # leave action_cmd_* empty if no action
