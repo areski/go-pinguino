@@ -138,6 +138,7 @@ func (service *Service) Manage() (string, error) {
 
 // function to check if a ping to an ip is successful
 func checkPing(ipaddress string, checker_regex string) (bool, error) {
+	// TODO: This method is not implemented yet
 	fmt.Printf("checkPing - ipaddress:%s checker_regex:%s\n", ipaddress, checker_regex)
 	return true, nil
 }
@@ -178,11 +179,6 @@ func procChecker(config Config, cmd_launcher chan<- string) {
 		c := time.Tick(time.Duration(config.Checker_freq) * time.Second)
 		for now := range c {
 			fmt.Printf("%v\n", now)
-			// Perform check
-			// Checker_type   string
-			// Checker_source string
-			// Checker_regex  string
-			// Checker_freq   int
 			// Action_cmd_on  string
 			// Action_cmd_off string
 			switch config.Checker_type {
@@ -196,6 +192,7 @@ func procChecker(config Config, cmd_launcher chan<- string) {
 
 			case check_Ping:
 				// rescheck, cerr := checkPing(config.Checker_source, config.Checker_regex)
+				// TODO: This method is not implemented yet
 			default:
 				log.Printf("Checker type is incorrect: %s", string(config.Checker_type))
 			}
