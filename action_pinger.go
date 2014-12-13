@@ -114,7 +114,7 @@ func (service *Service) Manage() (string, error) {
 	cmd_launcher := make(chan string, 100)
 	go procChecker(service.config, cmd_launcher)
 
-	// loop work cycle with accept connections or interrupt
+	// loop work cycle which listen for command or interrupt
 	// by system signal
 	for {
 		select {
@@ -173,6 +173,19 @@ func checkHTTPGet(url string, checker_regex string) (bool, error) {
 	}
 }
 
+func validateCheckerResult(rescheck bool, config Config, cmd_launcher chan<- string) {
+	log.Printf("\nChecker result rescheck: %s", rescheck)
+	if rescheck && len(config.Action_cmd_on) > 0 {
+		// check is true and we command_on
+		cmd_launcher <- config.Action_cmd_on
+	} else if !rescheck && len(config.Action_cmd_off) > 0 {
+		// check is false and we command_off
+		cmd_launcher <- config.Action_cmd_off
+	} else {
+		log.Printf("we dont have Action_cmd_on or Action_cmd_off to handle this case")
+	}
+}
+
 // We will run checker here and send command to channel cmd_launcher depending of checker results
 func procChecker(config Config, cmd_launcher chan<- string) {
 	for {
@@ -186,25 +199,28 @@ func procChecker(config Config, cmd_launcher chan<- string) {
 				rescheck, cerr := checkHTTPGet(config.Checker_source, config.Checker_regex)
 				if cerr != nil {
 					fmt.Println(cerr)
-				} else {
-					log.Printf("\nChecker result rescheck: %s", rescheck)
+					continue
 				}
-
+				validateCheckerResult(rescheck, config, cmd_launcher)
 			case check_Ping:
-				// rescheck, cerr := checkPing(config.Checker_source, config.Checker_regex)
 				// TODO: This method is not implemented yet
+				rescheck, cerr := checkPing(config.Checker_source, config.Checker_regex)
+				if cerr != nil {
+					fmt.Println(cerr)
+					continue
+				}
+				validateCheckerResult(rescheck, config, cmd_launcher)
 			default:
 				log.Printf("Checker type is incorrect: %s", string(config.Checker_type))
+				continue
 			}
-
-			cmd_launcher <- "a_command_to_launch"
 		}
 	}
 }
 
 func runCommand(command string) {
-	// we will run run a command here
-	fmt.Println("hey hey..." + command)
+	// Command runner
+	fmt.Println("We will now run the following command: " + command)
 }
 
 func main() {

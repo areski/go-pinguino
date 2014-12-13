@@ -43,10 +43,9 @@ Config file `/etc/action_pinger.yaml`:
 
     # checker_regex: Regular expresion to verify on source
     checker_regex: "RouterOS|WebFig"
-    # <title>RouterOS router configuration page</title>
 
     # checker_freq: Frequence of check in seconds (300 -> 5min)
-    checker_freq: 5
+    checker_freq: 300
 
     # action to perform when checker_regex is true
     # leave action_cmd_* empty if no action
@@ -69,5 +68,6 @@ TODO
 - [x] Add logging
 - [x] Implement in Goroutine
 - [x] Daemonize https://github.com/takama/daemon / https://github.com/sevlyar/go-daemon
+- [ ] Add test / travis-ci / Badge
+- [ ] godoc
 - [ ] Implement checkPing method
-
