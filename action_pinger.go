@@ -195,16 +195,16 @@ func procChecker(config Config, cmd_launcher chan<- string) {
 			// Action_cmd_on  string
 			// Action_cmd_off string
 			switch config.Checker_type {
-			case check_HTTPGet:
-				rescheck, cerr := checkHTTPGet(config.Checker_source, config.Checker_regex)
+			case check_Ping:
+				// TODO: This method is not implemented yet
+				rescheck, cerr := checkPing(config.Checker_source, config.Checker_regex)
 				if cerr != nil {
 					fmt.Println(cerr)
 					continue
 				}
 				validateCheckerResult(rescheck, config, cmd_launcher)
-			case check_Ping:
-				// TODO: This method is not implemented yet
-				rescheck, cerr := checkPing(config.Checker_source, config.Checker_regex)
+			case check_HTTPGet:
+				rescheck, cerr := checkHTTPGet(config.Checker_source, config.Checker_regex)
 				if cerr != nil {
 					fmt.Println(cerr)
 					continue
