@@ -30,8 +30,9 @@ package main
 
 import (
 	// "flag"
+	// "fmt"
 	"errors"
-	"fmt"
+	"github.com/codeskyblue/go-sh"
 	"github.com/kr/pretty"
 	"github.com/takama/daemon"
 	"gopkg.in/yaml.v2"
@@ -142,30 +143,27 @@ func (service *Service) Manage() (string, error) {
 // function to check if a ping to an ip is successful
 func checkPing(ipaddress string, checker_regex string) (bool, error) {
 	// TODO: This method is not implemented yet
-	fmt.Printf("checkPing - ipaddress:%s checker_regex:%s\n", ipaddress, checker_regex)
+	log.Printf("checkPing - ipaddress:%s checker_regex:%s\n", ipaddress, checker_regex)
 	return true, nil
 }
 
 // function to check the content of a URL against a regular expression
 func checkHTTPGet(url string, checker_regex string) (bool, error) {
-	fmt.Printf("checkHTTPGet - url:%s checker_regex:%s\n", url, checker_regex)
+	log.Printf("checkHTTPGet - url:%s checker_regex:%s\n", url, checker_regex)
 	response, err := http.Get(url)
-	fmt.Println(err)
 	if err != nil {
 		return false, err
 	} else {
 		defer response.Body.Close()
 		contents, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			fmt.Printf("%s", err)
+			log.Println(err)
 			os.Exit(1)
 		}
-		fmt.Printf("content len:%d\n", len(contents))
 		if len(contents) > 0 {
-			fmt.Printf("checks again regular expersion:%s\n", checker_regex)
-			// fmt.Printf("%s\n", string(contents))
+			// fmt.Printf("checks again regular expersion:%s\n", checker_regex)
+			// log.Println(string(contents))
 			match, regerr := regexp.MatchString(checker_regex, string(contents))
-			fmt.Println(match)
 			if regerr != nil {
 				return false, errors.New("invalid regular expression")
 			}
@@ -178,14 +176,14 @@ func checkHTTPGet(url string, checker_regex string) (bool, error) {
 
 // function to launch action based on the Result
 func launchCmdAction(rescheck bool, config Config, cmd_launcher chan<- []string) {
-	log.Printf("\nLaunch Action based on the result: %s", rescheck)
+	log.Printf("Launch Action based on the result: %v", rescheck)
 	// if rescheck is true or false, push command_on or command_off respectivily
 	if rescheck && len(config.Action_cmd_on[0]) > 0 {
 		cmd_launcher <- config.Action_cmd_on
 	} else if !rescheck && len(config.Action_cmd_off[0]) > 0 {
 		cmd_launcher <- config.Action_cmd_off
 	} else {
-		log.Printf("we dont have Action_cmd_on or Action_cmd_off to handle this case")
+		log.Printf("we dont have Action_cmd_on or Action_cmd_off to handle this case\n")
 	}
 }
 
@@ -195,25 +193,24 @@ func performChecker(config Config, cmd_launcher chan<- []string) {
 	for {
 		c := time.Tick(time.Duration(config.Checker_freq) * time.Second)
 		for now := range c {
-			fmt.Printf("%v\n", now)
 			switch config.Checker_type {
 			case check_Ping:
 				// TODO: This method is not implemented yet
 				rescheck, cerr := checkPing(config.Checker_source, config.Checker_regex)
 				if cerr != nil {
-					fmt.Println(cerr)
+					log.Println(cerr)
 					continue
 				}
 				launchCmdAction(rescheck, config, cmd_launcher)
 			case check_HTTPGet:
 				rescheck, cerr := checkHTTPGet(config.Checker_source, config.Checker_regex)
 				if cerr != nil {
-					fmt.Println(cerr)
+					log.Println(cerr)
 					continue
 				}
 				launchCmdAction(rescheck, config, cmd_launcher)
 			default:
-				log.Printf("Checker type is incorrect: %s", string(config.Checker_type))
+				log.Printf("Checker type is incorrect: %v - %s\n", now, string(config.Checker_type))
 				continue
 			}
 		}
@@ -222,14 +219,18 @@ func performChecker(config Config, cmd_launcher chan<- []string) {
 
 // Command runner
 func runCommand(command []string) {
-	fmt.Println("We will now run the following command: " + command[0])
+	if len(command[0]) > 0 && len(command[1]) > 0 {
+		log.Println("Run the command: ", command[0], command[1])
+		sh.Command(command[0], command[1]).Run()
+	} else {
+		sh.Command(command[0]).Run()
+	}
 }
 
 func main() {
 	// Load configfile and configure template
 	if len(*configfile) > 0 {
 		source, err := ioutil.ReadFile(*configfile)
-		// fmt.Println(string(source))
 		if err != nil {
 			panic(err)
 		}
@@ -246,22 +247,19 @@ func main() {
 		panic("Settings not properly configured!")
 	}
 
-	log.Printf("Starting action pinger...")
-	fmt.Println("Let's get the party started...")
-	fmt.Printf("%# v", pretty.Formatter(config))
-
-	// ------------------------
+	log.Println("Let's get the party started...")
+	log.Printf("Loaded Config:\n%# v\n\n", pretty.Formatter(config))
 
 	srv, err := daemon.New(name, description)
 	if err != nil {
-		fmt.Println("Error: ", err)
+		log.Printf("Error: ", err)
 		os.Exit(1)
 	}
 	service := &Service{daemon: srv, config: config}
 	status, err := service.Manage()
 	if err != nil {
-		fmt.Println(status, "\nError: ", err)
+		log.Printf(status, "\nError: ", err)
 		os.Exit(1)
 	}
-	fmt.Println(status)
+	log.Println(status)
 }
