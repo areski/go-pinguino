@@ -52,7 +52,7 @@ const check_Ping string = "Ping"
 
 // Config file for actionpinger service
 // var default_conf = "/etc/action_pinger.yaml"
-var default_conf = "./action_pinger.yaml"
+var default_conf = "./pinguino.yaml"
 
 // we create a point to string so we can return to use flag.
 var configfile = &default_conf
@@ -219,13 +219,14 @@ func performChecker(config Config, cmd_launcher chan<- []string) {
 }
 
 // Command runner
-func runCommand(command []string) {
+func runCommand(command []string) bool {
 	if len(command[0]) > 0 && len(command[1]) > 0 {
 		log.Println("Run the command: ", command[0], command[1])
 		sh.Command(command[0], command[1]).Run()
 	} else {
 		sh.Command(command[0]).Run()
 	}
+	return true
 }
 
 func main() {
