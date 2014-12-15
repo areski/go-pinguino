@@ -220,17 +220,20 @@ func performChecker(config Config, cmd_launcher chan<- []string) {
 
 // Command runner
 func runCommand(command []string) bool {
-	if len(command[0]) > 0 && len(command[1]) > 0 {
+	if len(command) == 2 && len(command[0]) > 0 && len(command[1]) > 0 {
 		log.Println("Run the command: ", command[0], command[1])
 		sh.Command(command[0], command[1]).Run()
-	} else {
+	} else if len(command) == 1 && len(command[0]) > 0 {
+		log.Println("Run the command: ", command[0])
 		sh.Command(command[0]).Run()
+	} else if len(command) == 0 {
+		return false
 	}
 	return true
 }
 
-func main() {
-	// Load configfile and configure template
+// Load configuration file
+func loadconfig() bool {
 	if len(*configfile) > 0 {
 		source, err := ioutil.ReadFile(*configfile)
 		if err != nil {
@@ -244,6 +247,13 @@ func main() {
 	} else {
 		panic("Config file defined properly.")
 	}
+	return true
+}
+
+func main() {
+
+	// Load config
+	loadconfig()
 
 	if len(config.Checker_type) == 0 || len(config.Checker_source) == 0 || len(config.Checker_regex) == 0 {
 		panic("Settings not properly configured!")
