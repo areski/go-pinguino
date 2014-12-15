@@ -20,11 +20,11 @@
 
 // # action to perform when checker_regex is true (leave action_cmd_* empty if no action)
 // # Use a tuple to define the command ie [ touch, /tmp/touchedfile.txt, ] or [./runme.sh, ]
-// action_cmd_on: "echo `date` >> /tmp/actionpinger.txt"
+// action_cmd_on: ["touch", "/tmp/touchedfile_on.txt", ]
 
 // # action to perform when checker_regex is false ( leave action_cmd_* empty if no action)
 // # Use a tuple to define the command ie [ touch, /tmp/touchedfile.txt, ] or [./runme.sh, ]
-// action_cmd_off: "echo oupsss >> /tmp/actionpinger.txt"
+// action_cmd_off: ["touch", "/tmp/touchedfile_off.txt", ]
 
 package main
 
@@ -76,8 +76,8 @@ var config = Config{}
 const (
 
 	// name of the service, match with executable file name
-	name        = "action_pinger"
-	description = "Action Pinger Service"
+	name        = "pinguino"
+	description = "Pinguino Service"
 )
 
 // Service has embedded daemon

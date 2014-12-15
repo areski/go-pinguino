@@ -15,7 +15,6 @@ checker_freq: 5
 # action to perform when checker_regex is true (leave action_cmd_* empty if no action)
 # Use a tuple to define the command ie [ touch, /tmp/touchedfile.txt, ] or [./runme.sh, ]
 action_cmd_on: ["touch", "/tmp/touchedfile_on.txt", ]
-# action_cmd_on: "echo `date` >> /tmp/actionpinger.txt"
 
 # action to perform when checker_regex is false ( leave action_cmd_* empty if no action)
 # Use a tuple to define the command ie [ touch, /tmp/touchedfile.txt, ] or [./runme.sh, ]
