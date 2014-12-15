@@ -50,7 +50,7 @@ import (
 const check_HTTPGet string = "HTTPGet"
 const check_Ping string = "Ping"
 
-// Config file for actionpinger service
+// default_conf is the config file for pinguino service
 // var default_conf = "/etc/action_pinger.yaml"
 var default_conf = "./pinguino.yaml"
 
@@ -61,7 +61,7 @@ var configfile = &default_conf
 // 	configfile = flag.String("configfile", "config.yaml", "path and filename of the config file")
 // )
 
-// Hold the structure for the configuration file
+// Config held the structure for the configuration file
 type Config struct {
 	// First letter of variables need to be capital letter
 	Checker_type   string
