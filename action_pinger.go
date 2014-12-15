@@ -2,21 +2,28 @@
 // This is where the magic happens...
 //
 
-// # checker: check to trigger an action (scrape | ping)
-// checker_type: "scrape"
+// Configuration file:
+// -------------------
+
+// # checker: check to trigger an action (HTTPGet | Ping)
+// checker_type: "HTTPGet"
 
 // # checker_source: URL or IP that will be checked
 // checker_source: "http://192.168.1.1/"
 
 // # checker_regex: Regular expresion to verify on source
 // checker_regex: "RouterOS|WebFig"
+// # <title>RouterOS router configuration page</title>
 
-// # action to perform when checker_regex is true
-// # leave action_cmd_* empty if no action
+// # checker_freq: Frequence of check in seconds (300 -> 5min)
+// checker_freq: 5
+
+// # action to perform when checker_regex is true (leave action_cmd_* empty if no action)
+// # Use a tuple to define the command ie [ touch, /tmp/touchedfile.txt, ] or [./runme.sh, ]
 // action_cmd_on: "echo `date` >> /tmp/actionpinger.txt"
 
-// # action to perform when checker_regex is false
-// # leave action_cmd_* empty if no action
+// # action to perform when checker_regex is false ( leave action_cmd_* empty if no action)
+// # Use a tuple to define the command ie [ touch, /tmp/touchedfile.txt, ] or [./runme.sh, ]
 // action_cmd_off: "echo oupsss >> /tmp/actionpinger.txt"
 
 package main
@@ -59,8 +66,8 @@ type Config struct {
 	Checker_source string
 	Checker_regex  string
 	Checker_freq   int
-	Action_cmd_on  string
-	Action_cmd_off string
+	Action_cmd_on  []string
+	Action_cmd_off []string
 }
 
 var config = Config{}
@@ -111,8 +118,8 @@ func (service *Service) Manage() (string, error) {
 	signal.Notify(interrupt, os.Interrupt, os.Kill, syscall.SIGTERM)
 
 	// set up channel on which to receive communication and launch commands
-	cmd_launcher := make(chan string, 100)
-	go procChecker(service.config, cmd_launcher)
+	cmd_launcher := make(chan []string, 100)
+	go performChecker(service.config, cmd_launcher)
 
 	// loop work cycle which listen for command or interrupt
 	// by system signal
@@ -131,10 +138,6 @@ func (service *Service) Manage() (string, error) {
 	// never happen, but need to complete code
 	return usage, nil
 }
-
-// func prefChecker(config Config) (string, error) {
-
-// }
 
 // function to check if a ping to an ip is successful
 func checkPing(ipaddress string, checker_regex string) (bool, error) {
@@ -173,13 +176,13 @@ func checkHTTPGet(url string, checker_regex string) (bool, error) {
 	}
 }
 
-func validateCheckerResult(rescheck bool, config Config, cmd_launcher chan<- string) {
-	log.Printf("\nChecker result rescheck: %s", rescheck)
-	if rescheck && len(config.Action_cmd_on) > 0 {
-		// check is true and we command_on
+// function to launch action based on the Result
+func launchCmdAction(rescheck bool, config Config, cmd_launcher chan<- []string) {
+	log.Printf("\nLaunch Action based on the result: %s", rescheck)
+	// if rescheck is true or false, push command_on or command_off respectivily
+	if rescheck && len(config.Action_cmd_on[0]) > 0 {
 		cmd_launcher <- config.Action_cmd_on
-	} else if !rescheck && len(config.Action_cmd_off) > 0 {
-		// check is false and we command_off
+	} else if !rescheck && len(config.Action_cmd_off[0]) > 0 {
 		cmd_launcher <- config.Action_cmd_off
 	} else {
 		log.Printf("we dont have Action_cmd_on or Action_cmd_off to handle this case")
@@ -187,13 +190,12 @@ func validateCheckerResult(rescheck bool, config Config, cmd_launcher chan<- str
 }
 
 // We will run checker here and send command to channel cmd_launcher depending of checker results
-func procChecker(config Config, cmd_launcher chan<- string) {
+func performChecker(config Config, cmd_launcher chan<- []string) {
+	// TODO: Unneed loop for?
 	for {
 		c := time.Tick(time.Duration(config.Checker_freq) * time.Second)
 		for now := range c {
 			fmt.Printf("%v\n", now)
-			// Action_cmd_on  string
-			// Action_cmd_off string
 			switch config.Checker_type {
 			case check_Ping:
 				// TODO: This method is not implemented yet
@@ -202,14 +204,14 @@ func procChecker(config Config, cmd_launcher chan<- string) {
 					fmt.Println(cerr)
 					continue
 				}
-				validateCheckerResult(rescheck, config, cmd_launcher)
+				launchCmdAction(rescheck, config, cmd_launcher)
 			case check_HTTPGet:
 				rescheck, cerr := checkHTTPGet(config.Checker_source, config.Checker_regex)
 				if cerr != nil {
 					fmt.Println(cerr)
 					continue
 				}
-				validateCheckerResult(rescheck, config, cmd_launcher)
+				launchCmdAction(rescheck, config, cmd_launcher)
 			default:
 				log.Printf("Checker type is incorrect: %s", string(config.Checker_type))
 				continue
@@ -218,9 +220,9 @@ func procChecker(config Config, cmd_launcher chan<- string) {
 	}
 }
 
-func runCommand(command string) {
-	// Command runner
-	fmt.Println("We will now run the following command: " + command)
+// Command runner
+func runCommand(command []string) {
+	fmt.Println("We will now run the following command: " + command[0])
 }
 
 func main() {
@@ -245,7 +247,6 @@ func main() {
 	}
 
 	log.Printf("Starting action pinger...")
-
 	fmt.Println("Let's get the party started...")
 	fmt.Printf("%# v", pretty.Formatter(config))
 
