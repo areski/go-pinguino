@@ -6,6 +6,7 @@
 // -------------------
 
 // # checker: check to trigger an action (HTTPGet | Ping)
+// # NOTE: Ping is not implemented yet
 // checker_type: "HTTPGet"
 
 // # checker_source: URL or IP that will be checked
