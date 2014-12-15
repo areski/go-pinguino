@@ -61,7 +61,7 @@ var configfile = &default_conf
 // 	configfile = flag.String("configfile", "config.yaml", "path and filename of the config file")
 // )
 
-// Hold the structure for the wiki configuration
+// Hold the structure for the configuration file
 type Config struct {
 	// First letter of variables need to be capital letter
 	Checker_type   string
@@ -75,7 +75,6 @@ type Config struct {
 var config = Config{}
 
 const (
-
 	// name of the service, match with executable file name
 	name        = "pinguino"
 	description = "Pinguino Service"
@@ -111,8 +110,6 @@ func (service *Service) Manage() (string, error) {
 		}
 	}
 
-	// Do something, call your goroutines, etc
-
 	// Set up channel on which to send signal notifications.
 	// We must use a buffered channel or risk missing the signal
 	// if we're not ready to receive when the signal is sent.
@@ -141,14 +138,16 @@ func (service *Service) Manage() (string, error) {
 	return usage, nil
 }
 
-// function to check if a ping to an ip is successful
+// checkPing function will ping an IP, this function is not implemented yet
+// This function returns a tuple (bool, error)
 func checkPing(ipaddress string, checker_regex string) (bool, error) {
 	// TODO: This method is not implemented yet
 	log.Printf("checkPing - ipaddress:%s checker_regex:%s\n", ipaddress, checker_regex)
 	return true, nil
 }
 
-// function to check the content of a URL against a regular expression
+// checkHTTPGet function check the content of a URL against a regular expression
+// This function returns a tuple (bool, error)
 func checkHTTPGet(url string, checker_regex string) (bool, error) {
 	log.Printf("checkHTTPGet - url:%s checker_regex:%s\n", url, checker_regex)
 	response, err := http.Get(url)
@@ -188,37 +187,37 @@ func launchCmdAction(rescheck bool, config Config, cmd_launcher chan<- []string)
 	}
 }
 
-// We will run checker here and send command to channel cmd_launcher depending of checker results
+// performChecker will start a loop based on the defined Checker_freq frequency
+// In the loop we will launch the appropriate function to run the type of check defined (check_HTTPGet or check_Ping)
+// This function will loop forever
 func performChecker(config Config, cmd_launcher chan<- []string) {
-	// TODO: Unneed loop for?
-	for {
-		c := time.Tick(time.Duration(config.Checker_freq) * time.Second)
-		for now := range c {
-			switch config.Checker_type {
-			case check_Ping:
-				// TODO: This method is not implemented yet
-				rescheck, cerr := checkPing(config.Checker_source, config.Checker_regex)
-				if cerr != nil {
-					log.Println(cerr)
-					continue
-				}
-				launchCmdAction(rescheck, config, cmd_launcher)
-			case check_HTTPGet:
-				rescheck, cerr := checkHTTPGet(config.Checker_source, config.Checker_regex)
-				if cerr != nil {
-					log.Println(cerr)
-					continue
-				}
-				launchCmdAction(rescheck, config, cmd_launcher)
-			default:
-				log.Printf("Checker type is incorrect: %v - %s\n", now, string(config.Checker_type))
+	c := time.Tick(time.Duration(config.Checker_freq) * time.Second)
+	for now := range c {
+		switch config.Checker_type {
+		case check_Ping:
+			// TODO: This method is not implemented yet
+			rescheck, cerr := checkPing(config.Checker_source, config.Checker_regex)
+			if cerr != nil {
+				log.Println(cerr)
 				continue
 			}
+			launchCmdAction(rescheck, config, cmd_launcher)
+		case check_HTTPGet:
+			rescheck, cerr := checkHTTPGet(config.Checker_source, config.Checker_regex)
+			if cerr != nil {
+				log.Println(cerr)
+				continue
+			}
+			launchCmdAction(rescheck, config, cmd_launcher)
+		default:
+			log.Printf("Checker type is incorrect: %v - %s\n", now, string(config.Checker_type))
+			continue
 		}
 	}
 }
 
-// Command runner
+// runCommand run the command received as parameter, a tuple []string is expected or a single command element
+// It returns boolean, true if the command is passed to sh.Command
 func runCommand(command []string) bool {
 	if len(command) == 2 && len(command[0]) > 0 && len(command[1]) > 0 {
 		log.Println("Run the command: ", command[0], command[1])
@@ -232,8 +231,9 @@ func runCommand(command []string) bool {
 	return true
 }
 
-// Load configuration file
-func loadconfig() bool {
+// loadConfig load the configuration from the conf file and set the configuration inside the structure config
+// It will returns boolean, true if the yaml config load is successful it will 'panic' otherwise
+func loadConfig() bool {
 	if len(*configfile) > 0 {
 		source, err := ioutil.ReadFile(*configfile)
 		if err != nil {
@@ -251,9 +251,7 @@ func loadconfig() bool {
 }
 
 func main() {
-
-	// Load config
-	loadconfig()
+	loadConfig()
 
 	if len(config.Checker_type) == 0 || len(config.Checker_source) == 0 || len(config.Checker_regex) == 0 {
 		panic("Settings not properly configured!")

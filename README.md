@@ -72,6 +72,7 @@ TODO
 - [x] Add logging
 - [x] Implement in Goroutine
 - [x] Daemonize https://github.com/takama/daemon / https://github.com/sevlyar/go-daemon
-- [ ] Add test / travis-ci / Badge
+- [x] Add test / travis-ci / Badge
 - [ ] godoc / https://gowalker.org
+- [ ] Review install/deploy documentation
 - [ ] Implement checkPing method
