@@ -5,6 +5,8 @@ This is a Go daemon/service that set and perform a list of actions based on the 
 
 [![circleci](https://circleci.com/gh/areski/go-pinguino.png)](https://circleci.com/gh/areski/go-pinguino)
 
+[![Go Walker](http://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/areski/go-pinguino)
+
 
 Disclaimer
 ----------
@@ -73,6 +75,6 @@ TODO
 - [x] Implement in Goroutine
 - [x] Daemonize https://github.com/takama/daemon / https://github.com/sevlyar/go-daemon
 - [x] Add test / travis-ci / Badge
-- [ ] godoc / https://gowalker.org
+- [x] godoc / https://gowalker.org
 - [ ] Review install/deploy documentation
 - [ ] Implement checkPing method
