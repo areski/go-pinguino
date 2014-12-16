@@ -32,7 +32,7 @@ To install and run the go-pinguino daemon, follow those steps:
     $ cd go-pinguino
     $ export GOPATH=`pwd`
     $ make build
-    $ ./daemon-pinguino
+    $ ./bin/daemon-pinguino
 
 
 Configuration file
