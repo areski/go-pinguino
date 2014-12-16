@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/areski/go-pinguino/pinguino"
+	"github.com/areski/go-pinguino"
 )
 
 func main() {

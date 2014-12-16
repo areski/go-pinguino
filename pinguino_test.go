@@ -1,6 +1,8 @@
 package pinguino
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestLoadconfig(t *testing.T) {
 	var res bool
