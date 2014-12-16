@@ -1,7 +1,7 @@
 Go-pinguino
 ===========
 
-This is a Go daemon/service that set and perform a list of actions based on the Http Get or Ping result.
+This is a Go daemon/service that perform a list of actions based on the result of Http Get or Ping.
 
 [![circleci](https://circleci.com/gh/areski/go-pinguino.png)](https://circleci.com/gh/areski/go-pinguino)
 
@@ -11,14 +11,15 @@ This is a Go daemon/service that set and perform a list of actions based on the 
 Disclaimer
 ----------
 
-This application aim to be run as Go Service (daemon). The project goals are very small, we just want to perform certain actions on an internal network based on microservice states.
-We are not trying to replace nagios or any monitoring platform, Pinguino was build to be use on personal computer.
+This application aim to be run as Go Service (daemon). The project goals are small, we just want to perform certain actions on an internal network based on microservice states.
+We are not trying to replace nagios or any monitoring platform, Pinguino was build to be use on personal computer,
+with minimal effort for deployment and dependencies.
 
 
 Usage
 -----
 
-You may find Pinguino useful if you want to activate/deactivate some local services or take action according to the output of webservices or state of your local network.
+You may find Pinguino useful if you want to activate/deactivate some services or run custom actions on your computer/server based on the output of webservices and surroundings.
 
 
 Install / Run
