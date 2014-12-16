@@ -1,10 +1,10 @@
-package main
+package pinguino
 
 import "testing"
 
 func TestLoadconfig(t *testing.T) {
 	var res bool
-	res = loadconfig()
+	res = LoadConfig()
 	if res != true {
 		t.Error("Expected true, got ", res)
 	}
@@ -13,12 +13,12 @@ func TestLoadconfig(t *testing.T) {
 func TestRunCommand(t *testing.T) {
 	var res bool
 	command := []string{"touch", "file.txt"}
-	res = runCommand(command)
+	res = RunCommand(command)
 	if res != true {
 		t.Error("Expected true, got ", res)
 	}
 	command = []string{""}
-	res = runCommand(command)
+	res = RunCommand(command)
 	if res != true {
 		t.Error("Expected true, got ", res)
 	}

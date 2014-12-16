@@ -1,33 +1,47 @@
 //
-// This is where the magic happens...
+// Go-pinguino is a Go daemon/service that set and perform a list of actions based on the Http Get or
+// Ping result.
+//
+// This application aim to be run as Go Service (daemon).
+//
+// The project goals are very small, we just want
+// to perform certain actions on an internal network based on microservice states.
+// We are not trying to replace nagios or any monitoring platform, Pinguino was build to be use on
+// personal computer.
+//
+//
+// Usage
+//
+// You may find Pinguino useful if you want to activate/deactivate some local services or take action according to the output of webservices or state of your local network.
+//
+// Configuration
+//
+// Hereby, a config file example:
+//
+// 		# checker: check to trigger an action (HTTPGet | Ping)
+// 		# NOTE: Ping is not implemented yet
+// 		checker_type: "HTTPGet"
+//
+// 		# checker_source: URL or IP that will be checked
+// 		checker_source: "http://192.168.1.1/"
+//
+// 		# checker_regex: Regular expresion to verify on source
+// 		checker_regex: "RouterOS|WebFig"
+// 		# <title>RouterOS router configuration page</title>
+//
+// 		# checker_freq: Frequence of check in seconds (300 -> 5min)
+// 		checker_freq: 5
+//
+// 		# action to perform when checker_regex is true (leave action_cmd_* empty if no action)
+// 		# Use a tuple to define the command ie [ touch, /tmp/touchedfile.txt, ] or [./runme.sh, ]
+// 		action_cmd_on: ["touch", "/tmp/touchedfile_on.txt", ]
+//
+// 		# action to perform when checker_regex is false ( leave action_cmd_* empty if no action)
+// 		# Use a tuple to define the command ie [ touch, /tmp/touchedfile.txt, ] or [./runme.sh, ]
+// 		action_cmd_off: ["touch", "/tmp/touchedfile_off.txt", ]
 //
 
-// Configuration file:
-// -------------------
-
-// # checker: check to trigger an action (HTTPGet | Ping)
-// # NOTE: Ping is not implemented yet
-// checker_type: "HTTPGet"
-
-// # checker_source: URL or IP that will be checked
-// checker_source: "http://192.168.1.1/"
-
-// # checker_regex: Regular expresion to verify on source
-// checker_regex: "RouterOS|WebFig"
-// # <title>RouterOS router configuration page</title>
-
-// # checker_freq: Frequence of check in seconds (300 -> 5min)
-// checker_freq: 5
-
-// # action to perform when checker_regex is true (leave action_cmd_* empty if no action)
-// # Use a tuple to define the command ie [ touch, /tmp/touchedfile.txt, ] or [./runme.sh, ]
-// action_cmd_on: ["touch", "/tmp/touchedfile_on.txt", ]
-
-// # action to perform when checker_regex is false ( leave action_cmd_* empty if no action)
-// # Use a tuple to define the command ie [ touch, /tmp/touchedfile.txt, ] or [./runme.sh, ]
-// action_cmd_off: ["touch", "/tmp/touchedfile_off.txt", ]
-
-package main
+package pinguino
 
 import (
 	// "flag"
@@ -51,11 +65,8 @@ const check_HTTPGet string = "HTTPGet"
 const check_Ping string = "Ping"
 
 // default_conf is the config file for pinguino service
-// var default_conf = "/etc/action_pinger.yaml"
-var default_conf = "./pinguino.yaml"
-
-// we create a point to string so we can return to use flag.
-var configfile = &default_conf
+// var default_conf = "./pinguino.yaml"
+var default_conf = "/etc/pinguino.yaml"
 
 // var (
 // 	configfile = flag.String("configfile", "config.yaml", "path and filename of the config file")
@@ -125,7 +136,7 @@ func (service *Service) Manage() (string, error) {
 	for {
 		select {
 		case command := <-cmd_launcher:
-			go runCommand(command)
+			go RunCommand(command)
 		case killSignal := <-interrupt:
 			log.Println("Got signal:", killSignal)
 			if killSignal == os.Interrupt {
@@ -138,17 +149,17 @@ func (service *Service) Manage() (string, error) {
 	return usage, nil
 }
 
-// checkPing function will ping an IP, this function is not implemented yet
+// CheckPing function will ping an IP, this function is not implemented yet
 // This function returns a tuple (bool, error)
-func checkPing(ipaddress string, checker_regex string) (bool, error) {
+func CheckPing(ipaddress string, checker_regex string) (bool, error) {
 	// TODO: This method is not implemented yet
-	log.Printf("checkPing - ipaddress:%s checker_regex:%s\n", ipaddress, checker_regex)
+	log.Printf("CheckPing - ipaddress:%s checker_regex:%s\n", ipaddress, checker_regex)
 	return true, nil
 }
 
-// checkHTTPGet function check the content of a URL against a regular expression
+// CheckHTTPGet function check the content of a URL against a regular expression
 // This function returns a tuple (bool, error)
-func checkHTTPGet(url string, checker_regex string) (bool, error) {
+func CheckHTTPGet(url string, checker_regex string) (bool, error) {
 	log.Printf("checkHTTPGet - url:%s checker_regex:%s\n", url, checker_regex)
 	response, err := http.Get(url)
 	if err != nil {
@@ -196,14 +207,14 @@ func performChecker(config Config, cmd_launcher chan<- []string) {
 		switch config.Checker_type {
 		case check_Ping:
 			// TODO: This method is not implemented yet
-			rescheck, cerr := checkPing(config.Checker_source, config.Checker_regex)
+			rescheck, cerr := CheckPing(config.Checker_source, config.Checker_regex)
 			if cerr != nil {
 				log.Println(cerr)
 				continue
 			}
 			launchCmdAction(rescheck, config, cmd_launcher)
 		case check_HTTPGet:
-			rescheck, cerr := checkHTTPGet(config.Checker_source, config.Checker_regex)
+			rescheck, cerr := CheckHTTPGet(config.Checker_source, config.Checker_regex)
 			if cerr != nil {
 				log.Println(cerr)
 				continue
@@ -218,7 +229,7 @@ func performChecker(config Config, cmd_launcher chan<- []string) {
 
 // runCommand run the command received as parameter, a tuple []string is expected or a single command element
 // It returns boolean, true if the command is passed to sh.Command
-func runCommand(command []string) bool {
+func RunCommand(command []string) bool {
 	if len(command) == 2 && len(command[0]) > 0 && len(command[1]) > 0 {
 		log.Println("Run the command: ", command[0], command[1])
 		sh.Command(command[0], command[1]).Run()
@@ -231,9 +242,12 @@ func runCommand(command []string) bool {
 	return true
 }
 
-// loadConfig load the configuration from the conf file and set the configuration inside the structure config
+// LoadConfig load the configuration from the conf file and set the configuration inside the structure config
 // It will returns boolean, true if the yaml config load is successful it will 'panic' otherwise
-func loadConfig() bool {
+func LoadConfig() bool {
+	// we create a point to string so we can return to use flag.
+	var configfile = &default_conf
+
 	if len(*configfile) > 0 {
 		source, err := ioutil.ReadFile(*configfile)
 		if err != nil {
@@ -250,8 +264,9 @@ func loadConfig() bool {
 	return true
 }
 
-func main() {
-	loadConfig()
+// StartDaemon loads configation and create the Service
+func StartDaemon() {
+	LoadConfig()
 
 	if len(config.Checker_type) == 0 || len(config.Checker_source) == 0 || len(config.Checker_regex) == 0 {
 		panic("Settings not properly configured!")
