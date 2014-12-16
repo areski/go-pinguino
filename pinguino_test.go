@@ -6,7 +6,7 @@ import (
 
 func TestLoadconfig(t *testing.T) {
 	var res bool
-	res = LoadConfig()
+	res = LoadConfig(Default_conf)
 	if res != true {
 		t.Error("Expected true, got ", res)
 	}

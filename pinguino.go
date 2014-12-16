@@ -65,12 +65,8 @@ const check_HTTPGet string = "HTTPGet"
 const check_Ping string = "Ping"
 
 // default_conf is the config file for pinguino service
-// var default_conf = "./pinguino.yaml"
-var default_conf = "/etc/pinguino.yaml"
-
-// var (
-// 	configfile = flag.String("configfile", "config.yaml", "path and filename of the config file")
-// )
+var Default_conf = "./pinguino.yaml"
+var Prod_conf = "/etc/pinguino.yaml"
 
 // Config held the structure for the configuration file
 type Config struct {
@@ -244,12 +240,9 @@ func RunCommand(command []string) bool {
 
 // LoadConfig load the configuration from the conf file and set the configuration inside the structure config
 // It will returns boolean, true if the yaml config load is successful it will 'panic' otherwise
-func LoadConfig() bool {
-	// we create a point to string so we can return to use flag.
-	var configfile = &default_conf
-
-	if len(*configfile) > 0 {
-		source, err := ioutil.ReadFile(*configfile)
+func LoadConfig(configfile string) bool {
+	if len(configfile) > 0 {
+		source, err := ioutil.ReadFile(configfile)
 		if err != nil {
 			panic(err)
 		}
@@ -261,17 +254,14 @@ func LoadConfig() bool {
 	} else {
 		panic("Config file defined properly.")
 	}
+	if len(config.Checker_type) == 0 || len(config.Checker_source) == 0 || len(config.Checker_regex) == 0 {
+		panic("Settings not properly configured!")
+	}
 	return true
 }
 
 // StartDaemon loads configation and create the Service
 func StartDaemon() {
-	LoadConfig()
-
-	if len(config.Checker_type) == 0 || len(config.Checker_source) == 0 || len(config.Checker_regex) == 0 {
-		panic("Settings not properly configured!")
-	}
-
 	log.Println("Let's get the party started...")
 	log.Printf("Loaded Config:\n%# v\n\n", pretty.Formatter(config))
 
