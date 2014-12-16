@@ -24,14 +24,15 @@ You may find Pinguino useful if you want to activate/deactivate some local servi
 Install / Run
 -------------
 
-To run this application:
+The config file need to be installed at the following location /etc/pinguino.yaml
+
+To install and run the go-pinguino daemon, follow those steps:
 
     $ git clone https://github.com/areski/go-pinguino.git
     $ cd go-pinguino
-    $ go build .
-    $ ./pinguino
-
-Config file need to be installed at the following location /etc/pinguino.yaml
+    $ export GOPATH=`pwd`
+    $ make build
+    $ ./daemon-pinguino
 
 
 Configuration file
@@ -76,5 +77,5 @@ TODO
 - [x] Daemonize https://github.com/takama/daemon / https://github.com/sevlyar/go-daemon
 - [x] Add test / travis-ci / Badge
 - [x] godoc / https://gowalker.org
-- [ ] Review install/deploy documentation
+- [x] Review install/deploy documentation
 - [ ] Implement checkPing method
