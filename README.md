@@ -1,7 +1,7 @@
 Go-pinguino
 ===========
 
-This is a Go daemon/service that perform a list of actions based on the result of Http Get or Ping.
+This is a Go daemon/service that performs a list of actions based on the result of Http Get or Ping.
 
 [![circleci](https://circleci.com/gh/areski/go-pinguino.png)](https://circleci.com/gh/areski/go-pinguino)
 
