@@ -79,4 +79,5 @@ TODO
 - [x] Add test / travis-ci / Badge
 - [x] godoc / https://gowalker.org
 - [x] Review install/deploy documentation
+- [ ] Handle several checkers: Update config file to support checker_type[0]: "...", checker_source[0]: "...", etc...
 - [ ] Implement checkPing method
