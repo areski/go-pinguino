@@ -223,7 +223,7 @@ func performChecker(config Config, cmdLauncher chan<- []string) {
 	}
 }
 
-// runCommand run the command received as parameter, a tuple []string is expected or a single command element
+// RunCommand run the command received as parameter, a tuple []string is expected or a single command element
 // It returns boolean, true if the command is passed to sh.Command
 func RunCommand(command []string) bool {
 	if len(command) == 2 && len(command[0]) > 0 && len(command[1]) > 0 {
