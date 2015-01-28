@@ -64,7 +64,7 @@ import (
 const check_HTTPGet string = "HTTPGet"
 const check_Ping string = "Ping"
 
-// default_conf is the config file used by pinguino
+// Default_conf is the config file used by pinguino
 var Default_conf = "./pinguino.yaml"
 
 // Prod_conf is the config file used in production by pinguino
