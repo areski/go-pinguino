@@ -160,25 +160,23 @@ func CheckHTTPGet(url string, checker_regex string) (bool, error) {
 	response, err := http.Get(url)
 	if err != nil {
 		return false, err
-	} else {
-		defer response.Body.Close()
-		contents, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			log.Println(err)
-			os.Exit(1)
-		}
-		if len(contents) > 0 {
-			// fmt.Printf("checks again regular expersion:%s\n", checker_regex)
-			// log.Println(string(contents))
-			match, regerr := regexp.MatchString(checker_regex, string(contents))
-			if regerr != nil {
-				return false, errors.New("invalid regular expression")
-			}
-			return match, nil
-		} else {
-			return false, errors.New("not content return")
-		}
 	}
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+	if len(contents) > 0 {
+		// fmt.Printf("checks again regular expersion:%s\n", checker_regex)
+		// log.Println(string(contents))
+		match, regerr := regexp.MatchString(checker_regex, string(contents))
+		if regerr != nil {
+			return false, errors.New("invalid regular expression")
+		}
+		return match, nil
+	}
+	return false, errors.New("not content return")
 }
 
 // function to launch action based on the Result
