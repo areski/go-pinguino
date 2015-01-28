@@ -124,14 +124,14 @@ func (service *Service) Manage() (string, error) {
 	signal.Notify(interrupt, os.Interrupt, os.Kill, syscall.SIGTERM)
 
 	// set up channel on which to receive communication and launch commands
-	cmd_launcher := make(chan []string, 100)
-	go performChecker(service.config, cmd_launcher)
+	cmdLauncher := make(chan []string, 100)
+	go performChecker(service.config, cmdLauncher)
 
 	// loop work cycle which listen for command or interrupt
 	// by system signal
 	for {
 		select {
-		case command := <-cmd_launcher:
+		case command := <-cmdLauncher:
 			go RunCommand(command)
 		case killSignal := <-interrupt:
 			log.Println("Got signal:", killSignal)
@@ -180,13 +180,13 @@ func CheckHTTPGet(url string, checker_regex string) (bool, error) {
 }
 
 // function to launch action based on the Result
-func launchCmdAction(rescheck bool, config Config, cmd_launcher chan<- []string) {
+func launchCmdAction(rescheck bool, config Config, cmdLauncher chan<- []string) {
 	log.Printf("Launch Action based on the result: %v", rescheck)
 	// if rescheck is true or false, push command_on or command_off respectivily
 	if rescheck && len(config.Action_cmd_on[0]) > 0 {
-		cmd_launcher <- config.Action_cmd_on
+		cmdLauncher <- config.Action_cmd_on
 	} else if !rescheck && len(config.Action_cmd_off[0]) > 0 {
-		cmd_launcher <- config.Action_cmd_off
+		cmdLauncher <- config.Action_cmd_off
 	} else {
 		log.Printf("we dont have Action_cmd_on or Action_cmd_off to handle this case\n")
 	}
@@ -195,7 +195,7 @@ func launchCmdAction(rescheck bool, config Config, cmd_launcher chan<- []string)
 // performChecker will start a loop based on the defined Checker_freq frequency
 // In the loop we will launch the appropriate function to run the type of check defined (check_HTTPGet or check_Ping)
 // This function will loop forever
-func performChecker(config Config, cmd_launcher chan<- []string) {
+func performChecker(config Config, cmdLauncher chan<- []string) {
 	c := time.Tick(time.Duration(config.Checker_freq) * time.Second)
 	for now := range c {
 		switch config.Checker_type {
@@ -206,14 +206,14 @@ func performChecker(config Config, cmd_launcher chan<- []string) {
 				log.Println(cerr)
 				continue
 			}
-			launchCmdAction(rescheck, config, cmd_launcher)
+			launchCmdAction(rescheck, config, cmdLauncher)
 		case check_HTTPGet:
 			rescheck, cerr := CheckHTTPGet(config.Checker_source, config.Checker_regex)
 			if cerr != nil {
 				log.Println(cerr)
 				continue
 			}
-			launchCmdAction(rescheck, config, cmd_launcher)
+			launchCmdAction(rescheck, config, cmdLauncher)
 		default:
 			log.Printf("Checker type is incorrect: %v - %s\n", now, string(config.Checker_type))
 			continue
